@@ -1,0 +1,138 @@
+{
+    "network_range": "192.168.1.1/24",
+    "camera_ports": [80, 81, 82, 83, 554, 8000, 8080, 8081, 8090, 9000],
+    "telegram_bot_token": "",
+    "telegram_chat_id": "",
+    "scan_settings": {
+        "timeout": 1.5,
+        "max_threads": 75,
+        "ping_timeout": 0.8
+    },
+    "credential_settings": {
+        "timeout": 4.0,
+        "max_attempts": 5,
+        "delay_between_attempts": 0.5
+    },
+    "notification_settings": {
+        "enable_telegram": false,
+        "notify_on_device_found": true,
+        "notify_on_vulnerability": true,
+        "notify_on_scan_complete": true
+    },
+    "alert_mode": "local",
+    "log_folder": "logs",
+    "advanced_scanning": true,
+    "enable_fingerprint": true,
+    "fingerprint_settings": {
+        "enable_nmap_fingerprint": true,
+        "nmap_timeout": 30,
+        "save_fingerprint_logs": true,
+        "fingerprint_brands": ["Hikvision", "Dahua", "Axis", "Ubiquiti", "Vivotek", "Foscam", "TP-Link", "Amcrest"]
+    },
+    "change_tracking": {
+        "enable_change_tracking": true,
+        "change_alert_threshold": 3,
+        "auto_generate_change_reports": true,
+        "change_report_dir": "logs/change_reports"
+    },
+    "timeout_settings": {
+        "port_scan": 1.5,
+        "http_request": 4,
+        "ssl_check": 4
+    },
+    "reporting": {
+        "generate_html": true,
+        "generate_json": true,
+        "generate_csv": true,
+        "telegram_report": false
+    },
+    "scan_intensity": "aggressive",
+    "concurrent_threads": 75,
+    "password_cracker": {
+        "john_path": "john",
+        "hashcat_path": "hashcat",
+        "dictionaries_dir": "diccionarios",
+        "enable_auto_download": true,
+        "default_hash_format": "raw-md5",
+        "crack_timeout": 300
+    },
+    "hash_cracker": {
+        "enable_hash_cracker": true,
+        "hash_file": "scanner/hashes/capturados.hash",
+        "cracking_output_dir": "scanner/cracking_results",
+        "use_external_tools": false,
+        "enable_auto_integration": true,
+        "supported_formats": ["MD5", "SHA1", "SHA256", "APR1", "NTLM", "MD5_CRYPT"]
+    },
+    "company_info": {
+        "name": "SmartCam Auditor v2.0 Pro",
+        "auditor": "Cybersecurity Team",
+        "contact": "security@smartcam.audit"
+    },
+    "brute_force": {
+        "enabled": true,
+        "max_threads": 30,
+        "timeout": 2.5,
+        "delay_between_attempts": 0.2,
+        "dictionary_path": "diccionarios/credenciales_comunes.txt",
+        "enable_ssh": true,
+        "enable_telnet": true,
+        "max_attempts_per_service": 150,
+        "stop_on_first_success": false
+    },
+    "audit_master": {
+        "enable_network_scan": true,
+        "enable_login_test": true,
+        "enable_brute_force": true,
+        "enable_cve_check": true,
+        "enable_telegram": false,
+        "brute_dict_path": "diccionarios/rockyou.txt",
+        "manual_ips": ["192.168.1.100", "192.168.1.101", "192.168.1.102"]
+    },
+    "cve_settings": {
+        "enable_cve_check": true,
+        "auto_check_cves": true,
+        "verify_cves_actively": false,
+        "enable_advanced_cve_features": true,
+        "enable_advanced_analysis": true,
+        "cve_timeout": 5,
+        "cve_max_threads": 10,
+        "generate_cve_reports": true,
+        "cve_database_path": "scanner/data/cves.json"
+    },
+    "exploit_settings": {
+        "auto_launch_exploits": false,
+        "exploit_safe_mode": true,
+        "exploit_timeout": 10,
+        "exploit_max_threads": 5,
+        "exploit_all_cves": false,
+        "log_exploits": true,
+        "enable_telegram_exploit_alerts": true
+    },
+    "logging_settings": {
+        "enable_color_logs": true,
+        "log_to_file": true,
+        "log_level": "INFO"
+    },
+    "rtsp_analysis": {
+        "auto_rtsp_analysis": false,
+        "rtsp_output_dir": "scanner/detecciones",
+        "yolo_model": "yolov8n.pt",
+        "confidence_threshold": 0.5,
+        "enable_security_alerts": true,
+        "alert_on_person_detection": true,
+        "rtsp_timeout": 10,
+        "rtsp_urls_to_try": [
+            "/stream",
+            "/live", 
+            "/ch0",
+            "/cam/realmonitor?channel=1&subtype=0",
+            "/live.sdp",
+            "/h264",
+            "/mpeg4"
+        ],
+        "enable_telegram_rtsp_alerts": false,
+        "save_detection_images": true,
+        "max_detections_per_device": 5
+    }
+}

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCam Auditor - Panel Web</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .header .subtitle {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #da190b);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-panel {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid;
+        }
+
+        .stat-card.devices { border-left-color: #3498db; }
+        .stat-card.vulnerabilities { border-left-color: #e74c3c; }
+        .stat-card.credentials { border-left-color: #f39c12; }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .results-table th {
+            background: #f7fafc;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .vulnerability-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .critical { background: #fed7d7; color: #c53030; }
+        .high { background: #fef5e7; color: #dd6b20; }
+        .medium { background: #e6fffa; color: #319795; }
+        .low { background: #f0fff4; color: #38a169; }
+
+        .network-config {
+            margin-bottom: 20px;
+        }
+
+        .network-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .network-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔒 SmartCam Auditor</h1>
+            <p class="subtitle">Panel de Control - Auditoría de Seguridad para Cámaras Inteligentes</p>
+        </div>
+
+        <div class="alert alert-warning">
+            <strong>⚠️ ADVERTENCIA LEGAL:</strong> Esta herramienta debe usarse únicamente en redes propias o con autorización explícita. El uso no autorizado puede ser ilegal.
+        </div>
+
+        <div class="card">
+            <h2>🚀 Control de Auditoría</h2>
+            
+            <div class="network-config">
+                <h3>Configuración de Redes</h3>
+                <textarea id="networksInput" class="network-input" rows="4" placeholder="192.168.1.0/24&#10;10.0.0.0/24&#10;172.16.0.0/24"></textarea>
+            </div>
+
+            <div class="controls">
+                <button id="startBtn" class="btn btn-primary" onclick="startAudit()">
+                    🎯 Iniciar Auditoría
+                </button>
+                <button id="stopBtn" class="btn btn-danger" onclick="stopAudit()" disabled>
+                    🛑 Detener Auditoría
+                </button>
+            </div>
+
+            <div class="status-panel">
+                <div id="statusText">Sistema listo para auditoría</div>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div id="progressText">0%</div>
+            </div>
+
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <div>Ejecutando auditoría...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Estadísticas de Seguridad</h2>
+            <div class="stats">
+                <div class="stat-card devices">
+                    <div id="devicesCount" class="stat-number">0</div>
+                    <div class="stat-label">Dispositivos Encontrados</div>
+                </div>
+                <div class="stat-card vulnerabilities">
+                    <div id="vulnerabilitiesCount" class="stat-number">0</div>
+                    <div class="stat-label">Vulnerabilidades</div>
+                </div>
+                <div class="stat-card credentials">
+                    <div id="credentialsCount" class="stat-number">0</div>
+                    <div class="stat-label">Credenciales Vulnerables</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📋 Resultados de Auditoría</h2>
+            <div>
+                <button class="btn btn-primary" onclick="exportReport()" style="margin-bottom: 20px;">
+                    📥 Exportar Reporte
+                </button>
+            </div>
+            <div id="resultsContainer">
+                <p>No hay resultados disponibles. Ejecuta una auditoría para ver los datos.</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>SmartCam Auditor v2.0 - Panel Web | © 2025 Security Solutions Corp.</p>
+            <p>Para uso empresarial y educativo únicamente</p>
+        </div>
+    </div>
+
+    <script>
+        let updateInterval;
+
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                document.getElementById('networksInput').value = data.networks.join('\n');
+            } catch (error) {
+                console.error('Error cargando configuración:', error);
+            }
+        }
+
+        async function startAudit() {
+            const networks = document.getElementById('networksInput').value
+                .split('\n')
+                .filter(line => line.trim() && !line.trim().startsWith('#'));
+            
+            if (networks.length === 0) {
+                alert('Por favor, ingresa al menos una red para auditar');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/start_audit', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({networks})
+                });
+
+                if (response.ok) {
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = false;
+                    document.getElementById('loadingIndicator').style.display = 'block';
+                    startStatusUpdates();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.error);
+                }
+            } catch (error) {
+                alert('Error iniciando auditoría: ' + error.message);
+            }
+        }
+
+        async function stopAudit() {
+            try {
+                await fetch('/api/stop_audit', {method: 'POST'});
+                stopStatusUpdates();
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('loadingIndicator').style.display = 'none';
+            } catch (error) {
+                alert('Error deteniendo auditoría: ' + error.message);
+            }
+        }
+
+        function startStatusUpdates() {
+            updateInterval = setInterval(updateStatus, 1000);
+        }
+
+        function stopStatusUpdates() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        }
+
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const status = await response.json();
+
+                document.getElementById('statusText').textContent = status.current_task;
+                document.getElementById('progressFill').style.width = status.progress + '%';
+                document.getElementById('progressText').textContent = status.progress + '%';
+
+                if (!status.running && status.progress === 100) {
+                    stopStatusUpdates();
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = true;
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    loadResults();
+                }
+            } catch (error) {
+                console.error('Error actualizando estado:', error);
+            }
+        }
+
+        async function loadResults() {
+            try {
+                const response = await fetch('/api/results');
+                const data = await response.json();
+
+                // Actualizar estadísticas
+                document.getElementById('devicesCount').textContent = data.total_devices;
+                document.getElementById('vulnerabilitiesCount').textContent = data.vulnerabilities_count;
+                document.getElementById('credentialsCount').textContent = data.credentials_found;
+
+                // Mostrar resultados
+                displayResults(data.results);
+            } catch (error) {
+                console.error('Error cargando resultados:', error);
+            }
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('resultsContainer');
+            
+            if (results.length === 0) {
+                container.innerHTML = '<p>No se encontraron dispositivos en las redes especificadas.</p>';
+                return;
+            }
+
+            let html = '<table class="results-table"><thead><tr>';
+            html += '<th>IP</th><th>Red</th><th>Puertos</th><th>Credenciales</th><th>Vulnerabilidades</th>';
+            html += '</tr></thead><tbody>';
+
+            results.forEach(result => {
+                html += '<tr>';
+                html += `<td><strong>${result.ip}</strong></td>`;
+                html += `<td>${result.network}</td>`;
+                html += `<td>${result.ports.length} puertos abiertos</td>`;
+                html += `<td>${result.credentials.length > 0 ? '⚠️ ' + result.credentials.length : '✅ Seguro'}</td>`;
+                
+                let vulnHtml = '';
+                result.vulnerabilities.forEach(vuln => {
+                    const severity = vuln.severity.toLowerCase();
+                    vulnHtml += `<span class="vulnerability-badge ${severity}">${vuln.severity}</span> `;
+                });
+                html += `<td>${vulnHtml || '✅ Sin vulnerabilidades críticas'}</td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        async function exportReport() {
+            try {
+                const response = await fetch('/api/export_report');
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `smartcam_report_${new Date().toISOString().slice(0,19).replace(/:/g,'')}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    alert('Error exportando reporte');
+                }
+            } catch (error) {
+                alert('Error exportando reporte: ' + error.message);
+            }
+        }
+
+        // Cargar configuración al iniciar
+        window.onload = loadConfig;
+    </script>
+</body>
+</html>

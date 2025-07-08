@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCam Auditor v2.0 Pro - Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_new.css') }}">
+</head>
+<body class="matrix-bg">
+    <div class="container">
+        <!-- Header con efectos neón -->
+        <header class="text-center fade-in">
+            <h1 class="neon-text">🔒 SmartCam Auditor v2.0 Pro</h1>
+            <p class="text-neon-blue">Dashboard de Seguridad Cyberpunk</p>
+            <div class="version-badge" style="display: inline-block; background: rgba(57, 255, 20, 0.1); padding: 8px 16px; border-radius: 20px; border: 2px solid var(--neon-green); margin: 10px;">
+                <span class="text-neon-green">v2.0 Pro - Theta Edition</span>
+            </div>
+        </header>
+
+        <!-- Controles de usuario -->
+        <div style="position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; gap: 15px; align-items: center;">
+            <div class="user-info cyber-border" style="padding: 10px 15px; border-radius: 20px;">
+                <span class="text-neon-green">👤 {{ user }}</span>
+            </div>
+            <a href="{{ url_for('web_panel.logout') }}" class="btn btn-danger">🚪 Logout</a>
+        </div>
+
+        <!-- Mensajes Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'error' }} slide-in">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Panel de Control Principal -->
+        <section class="card cyber-border neon-glow fade-in">
+            <h2 class="text-neon-green">🎯 Centro de Comando</h2>
+            <p class="text-secondary">Ejecuta auditorías de seguridad en dispositivos IoT y cámaras inteligentes</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div class="action-card hologram" style="padding: 20px; border-radius: 10px; text-align: center;">
+                    <h3 class="text-neon-green">🔍 Auditoría Completa</h3>
+                    <p style="margin: 10px 0; color: var(--text-secondary);">Escaneo profundo de red y análisis completo de vulnerabilidades</p>
+                    <a href="{{ url_for('web_panel.ejecutar_auditoria') }}" class="btn glow-green">🚀 Ejecutar Auditoría</a>
+                </div>
+                
+                <div class="action-card hologram" style="padding: 20px; border-radius: 10px; text-align: center;">
+                    <h3 class="text-neon-blue">⚡ Escaneo Rápido</h3>
+                    <p style="margin: 10px 0; color: var(--text-secondary);">Verificación rápida de puertos y servicios expuestos</p>
+                    <a href="{{ url_for('web_panel.ejecutar_auditoria_rapida') }}" class="btn btn-secondary glow-blue">⚡ Escaneo Rápido</a>
+                </div>
+                
+                <div class="action-card hologram" style="padding: 20px; border-radius: 10px; text-align: center;">
+                    <h3 class="text-neon-pink">📊 Reportes</h3>
+                    <p style="margin: 10px 0; color: var(--text-secondary);">Visualiza gráficos interactivos y métricas de seguridad</p>
+                    <a href="{{ url_for('web_panel.charts') }}" class="btn glow-pink" style="background: linear-gradient(135deg, var(--neon-pink), #cc1040); color: white; border: 2px solid var(--neon-pink);">📊 Ver Gráficos</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Estadísticas Rápidas -->
+        <section class="card cyber-border fade-in">
+            <h2 class="text-neon-blue">📈 Estado del Sistema</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div class="stat-card" style="background: rgba(57, 255, 20, 0.1); padding: 15px; border-radius: 8px; border: 1px solid var(--neon-green); text-align: center;">
+                    <div class="text-neon-green" style="font-size: 2rem; font-weight: bold;">{{ log_files|length }}</div>
+                    <div class="text-secondary">Reportes Generados</div>
+                </div>
+                <div class="stat-card" style="background: rgba(0, 191, 255, 0.1); padding: 15px; border-radius: 8px; border: 1px solid var(--neon-blue); text-align: center;">
+                    <div class="text-neon-blue" style="font-size: 2rem; font-weight: bold;">5</div>
+                    <div class="text-secondary">Dispositivos Monitoreados</div>
+                </div>
+                <div class="stat-card" style="background: rgba(255, 20, 147, 0.1); padding: 15px; border-radius: 8px; border: 1px solid var(--neon-pink); text-align: center;">
+                    <div class="text-neon-pink" style="font-size: 2rem; font-weight: bold;">3</div>
+                    <div class="text-secondary">Vulnerabilidades Críticas</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lista de Logs -->
+        <section class="card cyber-border fade-in">
+            <h2 class="text-neon-green">📝 Registro de Auditorías</h2>
+            {% if log_files %}
+                <div class="log-list" style="max-height: 400px; overflow-y: auto;">
+                    {% for file in log_files %}
+                        <div class="log-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 10px 0; background: rgba(57, 255, 20, 0.05); border-radius: 8px; border-left: 4px solid var(--neon-green); transition: all 0.3s ease;">
+                            <div>
+                                <strong class="text-neon-green">📄 {{ file }}</strong>
+                                <div class="text-secondary" style="font-size: 0.9rem; margin-top: 5px;">
+                                    {% if 'security_assessment' in file %}
+                                        🔍 Auditoría Completa
+                                    {% elif 'quick_scan' in file %}
+                                        ⚡ Escaneo Rápido
+                                    {% else %}
+                                        📊 Reporte General
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <a href="{{ url_for('web_panel.view_log', filename=file) }}" 
+                               class="btn btn-secondary" 
+                               style="padding: 8px 16px; font-size: 0.9rem;" 
+                               target="_blank">👁️ Ver</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-logs" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <div style="font-size: 3rem; margin-bottom: 20px;">📊</div>
+                    <h3 class="text-secondary">No hay reportes disponibles</h3>
+                    <p>Ejecuta una auditoría para generar tu primer reporte de seguridad</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Footer -->
+        <footer style="text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid var(--border-color);">
+            <p class="text-muted">SmartCam Auditor v2.0 Pro - Herramienta de Pentesting para Cámaras IoT</p>
+            <p class="text-neon-green" style="font-size: 0.9rem; margin-top: 10px;">⚠️ Solo para uso en redes propias y con autorización explícita</p>
+        </footer>
+    </div>
+
+    <script>
+        // Efectos interactivos adicionales
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hover effects para las tarjetas de log
+            document.querySelectorAll('.log-item').forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(10px)';
+                    this.style.boxShadow = '0 0 20px rgba(57, 255, 20, 0.3)';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                    this.style.boxShadow = 'none';
+                });
+            });
+
+            // Auto-refresh cada 30 segundos para nuevos logs
+            setInterval(function() {
+                // Solo refrescar si no hay modal abierto
+                if (!document.querySelector('.modal')) {
+                    location.reload();
+                }
+            }, 30000);
+        });
+    </script>
+</body>
+</html>

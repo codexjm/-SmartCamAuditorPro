@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión - SmartCam Auditor</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .login-container {
+            background: rgba(30, 30, 30, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 255, 153, 0.3);
+            border: 1px solid rgba(0, 255, 153, 0.2);
+            min-width: 400px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .login-container:hover {
+            box-shadow: 0 20px 50px rgba(0, 255, 153, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #00ff99;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 255, 153, 0.5);
+        }
+
+        .header p {
+            color: #cccccc;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .version {
+            color: #00ff99;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cccccc;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #444;
+            border-radius: 10px;
+            background: rgba(40, 40, 40, 0.8);
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00ff99;
+            box-shadow: 0 0 15px rgba(0, 255, 153, 0.3);
+            background: rgba(40, 40, 40, 1);
+        }
+
+        .form-group input::placeholder {
+            color: #888;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #00ff99 0%, #00cc77 100%);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(135deg, #00cc77 0%, #00aa55 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 255, 153, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .error {
+            background: rgba(244, 67, 54, 0.1);
+            color: #ff6b6b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            text-align: center;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .credentials-hint {
+            background: rgba(0, 255, 153, 0.1);
+            color: #00ff99;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid rgba(0, 255, 153, 0.3);
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .credentials-hint strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0, 255, 153, 0.1);
+            color: #00ff99;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 15px;
+            border: 1px solid rgba(0, 255, 153, 0.3);
+        }
+
+        .security-badge::before {
+            content: "🛡️";
+            margin-right: 8px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 20px;
+                padding: 30px 25px;
+                min-width: auto;
+                width: 100%;
+                max-width: 400px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading .login-btn::after {
+            content: "";
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid #000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="header">
+            <h1>🔒 SmartCam Auditor</h1>
+            <p>Panel de Auditoría de Seguridad</p>
+            <span class="version">v2.0 Pro</span>
+        </div>
+
+        <form method="post" id="loginForm">
+            <div class="form-group">
+                <label for="username">👤 Usuario</label>
+                <input type="text" id="username" name="username" placeholder="Ingresa tu usuario" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">🔑 Contraseña</label>
+                <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required>
+            </div>
+
+            <button type="submit" class="login-btn">
+                <span id="btnText">🚀 Iniciar Sesión</span>
+            </button>
+
+            {% if error %}
+                <div class="error">
+                    ❌ {{ error }}
+                </div>
+            {% endif %}
+        </form>
+
+        <div class="credentials-hint">
+            <strong>📋 Credenciales por Defecto:</strong>
+            Usuario: <code>admin</code> | Contraseña: <code>smartcam2024</code>
+        </div>
+
+        <div class="security-badge">
+            Sistema de Auditoría Autorizado
+        </div>
+
+        <div class="footer">
+            <p><strong>SmartCam Auditor v2.0 Pro</strong></p>
+            <p>© 2025 Security Solutions Corp. | Para uso en redes autorizadas únicamente</p>
+            <p>🌐 Acceso desde: <span id="clientInfo"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Mostrar información del cliente
+        document.getElementById('clientInfo').textContent = window.location.hostname + ':' + window.location.port;
+
+        // Manejar envío del formulario con animación
+        document.getElementById('loginForm').addEventListener('submit', function() {
+            const container = document.querySelector('.login-container');
+            const btnText = document.getElementById('btnText');
+            
+            container.classList.add('loading');
+            btnText.textContent = '🔄 Verificando...';
+        });
+
+        // Enfocar automáticamente en el campo de usuario
+        document.getElementById('username').focus();
+
+        // Atajo de teclado Enter para enviar
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loginForm').submit();
+            }
+        });
+
+        // Efecto de tipeo para el título
+        let title = "🔒 SmartCam Auditor";
+        let index = 0;
+        let titleElement = document.querySelector('.header h1');
+        
+        function typeTitle() {
+            if (index < title.length) {
+                titleElement.textContent = title.substring(0, index + 1);
+                index++;
+                setTimeout(typeTitle, 100);
+            }
+        }
+
+        // Iniciar animación después de un momento
+        setTimeout(() => {
+            titleElement.textContent = "";
+            typeTitle();
+        }, 500);
+    </script>
+</body>
+</html>
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background-color: #00ff99;
+            color: #000;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #00cc88;
+        }
+        
+        .error {
+            color: #ff4444;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: rgba(255, 68, 68, 0.1);
+            border: 1px solid #ff4444;
+            border-radius: 5px;
+        }
+        
+        .credentials-hint {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: rgba(0, 255, 153, 0.1);
+            border: 1px solid #00ff99;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        a {
+            color: #00ff99;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>� Acceso al Panel</h2>
+        
+        <form method="post">
+            <input type="text" name="username" placeholder="Usuario" required><br>
+            <input type="password" name="password" placeholder="Contraseña" required><br>
+            <button type="submit">Entrar</button>
+        </form>
+        
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        <div class="credentials-hint">
+            💡 <strong>Credenciales por defecto:</strong><br>
+            Usuario: <code>admin</code> | Contraseña: <code>smartcam2024</code>
+        </div>
+    </div>
+</body>
+</html>

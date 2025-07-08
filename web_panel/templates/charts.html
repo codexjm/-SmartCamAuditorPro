@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Dashboard de Gráficos - SmartCam Auditor v2.0 Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_new.css') }}">
+</head>
+<body class="matrix-bg">
+    <div class="container">
+        <!-- Header con efectos neón -->
+        <header class="text-center fade-in">
+            <h1 class="neon-text">📊 Dashboard de Gráficos Cyberpunk</h1>
+            <p class="text-neon-blue">Análisis Visual de Seguridad IoT</p>
+        </header>
+
+        <!-- Controles de navegación -->
+        <div style="position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; gap: 15px; align-items: center;">
+            <a href="{{ url_for('web_panel.dashboard') }}" class="btn btn-secondary">🏠 Dashboard</a>
+            <a href="{{ url_for('web_panel.logout') }}" class="btn btn-danger">🚪 Logout</a>
+        </div>
+            margin-bottom: 40px;
+            background: rgba(30, 30, 30, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 255, 153, 0.2);
+            border: 1px solid rgba(0, 255, 153, 0.1);
+        }
+
+        .header h2 {
+            color: #00ff99;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 153, 0.5);
+        }
+
+        .header p {
+            color: #cccccc;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .version {
+            background: rgba(0, 255, 153, 0.1);
+            color: #00ff99;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            border: 1px solid rgba(0, 255, 153, 0.3);
+        }
+
+        .user-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .user-info {
+            background: rgba(0, 255, 153, 0.1);
+            color: #00ff99;
+            padding: 10px 15px;
+            border-radius: 25px;
+            border: 1px solid rgba(0, 255, 153, 0.3);
+            font-weight: bold;
+        }
+
+        .dashboard-btn, .logout-btn {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+        }
+
+        .dashboard-btn:hover, .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .card {
+            background: rgba(30, 30, 30, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 255, 153, 0.1);
+            border: 1px solid rgba(0, 255, 153, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 255, 153, 0.2);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            background: rgba(40, 40, 40, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .chart-title {
+            color: #00ff99;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0, 255, 153, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: rgba(40, 40, 40, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(0, 255, 153, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(50, 50, 50, 0.9);
+            border-color: rgba(0, 255, 153, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00ff99;
+            text-shadow: 0 0 10px rgba(0, 255, 153, 0.3);
+        }
+
+        .stat-label {
+            color: #cccccc;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00ff99 0%, #00cc77 100%);
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h2 {
+                font-size: 2rem;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+            .user-controls {
+                position: relative;
+                top: auto;
+                right: auto;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- User Controls -->
+    <div class="user-controls">
+        <span class="user-info">👤 {{ user }}</span>
+        <a href="{{ url_for('web_panel.dashboard') }}" class="dashboard-btn">📊 Dashboard</a>
+        <a href="{{ url_for('web_panel.logout') }}" class="logout-btn">🚪 Cerrar Sesión</a>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h2>📊 Gráficos de Auditoría</h2>
+            <p>Visualización de Resultados de Seguridad</p>
+            <span class="version">v2.0 Pro</span>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="card">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ data.get('Credenciales débiles', 0) }}</div>
+                    <div class="stat-label">Credenciales Débiles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ data.get('Puertos inseguros', 0) }}</div>
+                    <div class="stat-label">Puertos Inseguros</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ data.get('Cámaras sin cifrado', 0) }}</div>
+                    <div class="stat-label">Cámaras sin Cifrado</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chart -->
+        <div class="card">
+            <div class="chart-title">📈 Vulnerabilidades Detectadas</div>
+            <div class="chart-container">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <a href="{{ url_for('web_panel.dashboard') }}" class="btn btn-primary">📊 Volver al Dashboard</a>
+            <button onclick="refreshChart()" class="btn btn-secondary">🔄 Actualizar Gráfico</button>
+            <button onclick="exportChart()" class="btn btn-secondary">📥 Exportar Datos</button>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>SmartCam Auditor v2.0 Pro</strong> - Dashboard de Analytics</p>
+            <p>© 2025 Security Solutions Corp. | Visualización de métricas de seguridad</p>
+            <p>📊 Powered by Chart.js | 🛡️ Para profesionales en ciberseguridad</p>
+        </div>
+    </div>
+
+    <script>
+        // Datos del backend
+        const data = {{ data|tojson }};
+        
+        // Configuración del gráfico
+        const ctx = document.getElementById('myChart').getContext('2d');
+        
+        // Crear el gráfico
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(data),
+                datasets: [{
+                    label: 'Vulnerabilidades detectadas',
+                    data: Object.values(data),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(255, 159, 64, 0.6)',
+                        'rgba(255, 205, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(153, 102, 255, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(255, 205, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff',
+                            font: {
+                                size: 14,
+                                family: 'Segoe UI'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#00ff99',
+                        bodyColor: '#ffffff',
+                        borderColor: '#00ff99',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#ffffff',
+                            font: {
+                                size: 12
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#ffffff',
+                            font: {
+                                size: 12
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1500,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+
+        // Función para actualizar el gráfico
+        function refreshChart() {
+            // Simular nuevos datos (en implementación real vendría del servidor)
+            const newData = Object.keys(data).reduce((acc, key) => {
+                acc[key] = Math.floor(Math.random() * 20) + 1;
+                return acc;
+            }, {});
+            
+            chart.data.datasets[0].data = Object.values(newData);
+            chart.update('active');
+            
+            // Actualizar estadísticas
+            updateStats(newData);
+            
+            showNotification('📊 Gráfico actualizado con nuevos datos', 'success');
+        }
+
+        // Función para actualizar estadísticas
+        function updateStats(newData) {
+            const statCards = document.querySelectorAll('.stat-number');
+            const values = Object.values(newData);
+            statCards.forEach((card, index) => {
+                if (values[index] !== undefined) {
+                    card.textContent = values[index];
+                    card.style.animation = 'none';
+                    card.offsetHeight; // Trigger reflow
+                    card.style.animation = 'pulse 0.5s ease-in-out';
+                }
+            });
+        }
+
+        // Función para exportar datos
+        function exportChart() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                chart_data: data,
+                total_vulnerabilities: Object.values(data).reduce((a, b) => a + b, 0),
+                generated_by: "SmartCam Auditor v2.0 Pro"
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `smartcam_chart_data_${new Date().toISOString().slice(0,19).replace(/:/g,'')}.json`;
+            link.click();
+            
+            showNotification('📥 Datos exportados exitosamente', 'success');
+        }
+
+        // Sistema de notificaciones
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: ${type === 'success' ? 'rgba(0, 255, 153, 0.2)' : 'rgba(255, 69, 58, 0.2)'};
+                color: ${type === 'success' ? '#00ff99' : '#ff453a'};
+                padding: 15px 25px;
+                border-radius: 10px;
+                border: 1px solid ${type === 'success' ? 'rgba(0, 255, 153, 0.4)' : 'rgba(255, 69, 58, 0.4)'};
+                z-index: 1001;
+                animation: slideIn 0.3s ease;
+                max-width: 300px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Animaciones CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Mostrar notificación de bienvenida
+        setTimeout(() => {
+            showNotification('📊 Dashboard de gráficos cargado correctamente', 'success');
+        }, 500);
+    </script>
+</body>
+</html>
+                <div class="summary-card">
+                    <div class="summary-number">{{ security_metrics['Credenciales débiles'] }}</div>
+                    <div class="summary-label">Credenciales Vulnerables</div>
+                    <div class="summary-icon">🔑</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number">{{ ((security_metrics['Dispositivos seguros'] / (total_devices if total_devices > 0 else 1)) * 100) | round(1) }}%</div>
+                    <div class="summary-label">Nivel de Seguridad</div>
+                    <div class="summary-icon">🛡️</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos de Vulnerabilidades por Severidad -->
+        <div class="card">
+            <h2>🎯 Distribución de Vulnerabilidades por Severidad</h2>
+            <div class="chart-container">
+                <canvas id="vulnerabilitySeverityChart"></canvas>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item critical">🔴 Críticas - Requieren acción inmediata</div>
+                <div class="legend-item high">🟠 Altas - Prioridad alta</div>
+                <div class="legend-item medium">🟡 Medias - Atención moderada</div>
+                <div class="legend-item low">🟢 Bajas - Seguimiento rutinario</div>
+            </div>
+        </div>
+
+        <!-- Métricas de Seguridad -->
+        <div class="card">
+            <h2>🔒 Métricas de Seguridad por Categoría</h2>
+            <div class="chart-container">
+                <canvas id="securityMetricsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Evolución Temporal -->
+        <div class="card">
+            <h2>📈 Evolución Temporal de Amenazas</h2>
+            <div class="chart-container">
+                <canvas id="timelineChart"></canvas>
+            </div>
+            <p class="chart-description">
+                Tendencia de vulnerabilidades y dispositivos detectados en las últimas auditorías
+            </p>
+        </div>
+
+        <!-- Distribución de Tipos de Dispositivos -->
+        <div class="card">
+            <h2>🔧 Distribución por Tipo de Dispositivo</h2>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <canvas id="deviceTypesChart"></canvas>
+                </div>
+                <div class="device-breakdown">
+                    <h3>Detalles por Categoría</h3>
+                    <div class="breakdown-list">
+                        {% for device_type, count in device_types.items() %}
+                        <div class="breakdown-item">
+                            <span class="device-icon">
+                                {% if device_type == "Cámaras IP" %}📹
+                                {% elif device_type == "DVR/NVR" %}📼
+                                {% elif device_type == "Routers" %}🌐
+                                {% else %}🔌{% endif %}
+                            </span>
+                            <span class="device-name">{{ device_type }}</span>
+                            <span class="device-count">{{ count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Acciones Rápidas -->
+        <div class="card">
+            <h2>⚡ Acciones Rápidas</h2>
+            <div class="quick-actions">
+                <a href="/dashboard" class="action-btn primary">
+                    📊 Volver al Dashboard
+                </a>
+                <button onclick="refreshCharts()" class="action-btn secondary">
+                    🔄 Actualizar Gráficos
+                </button>
+                <button onclick="exportChartsReport()" class="action-btn info">
+                    📥 Exportar Reporte Visual
+                </button>
+                <a href="/ejecutar_rapido" class="action-btn warning">
+                    ⚡ Nueva Auditoría Rápida
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>SmartCam Auditor v2.0 Pro</strong> - Analytics Dashboard</p>
+            <p>© 2025 Security Solutions Corp. | Visualización avanzada de métricas de seguridad</p>
+            <p>📈 Powered by Chart.js | 🛡️ Para profesionales en ciberseguridad</p>
+        </div>
+    </div>
+
+    <script>
+        // Datos del backend
+        const vulnerabilitySeverityData = {{ vulnerability_severity | tojson }};
+        const securityMetricsData = {{ security_metrics | tojson }};
+        const timelineData = {{ timeline | tojson }};
+        const deviceTypesData = {{ device_types | tojson }};
+
+        // Configuración de colores
+        const colors = {
+            critical: '#ef4444',
+            high: '#f97316', 
+            medium: '#eab308',
+            low: '#22c55e',
+            primary: '#3b82f6',
+            secondary: '#6b7280',
+            success: '#10b981',
+            warning: '#f59e0b',
+            info: '#06b6d4'
+        };
+
+        // Configuración base para gráficos
+        Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        Chart.defaults.font.size = 12;
+        Chart.defaults.color = '#374151';
+
+        // Gráfico de Vulnerabilidades por Severidad (Doughnut)
+        const vulnerabilitySeverityCtx = document.getElementById('vulnerabilitySeverityChart').getContext('2d');
+        const vulnerabilitySeverityChart = new Chart(vulnerabilitySeverityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(vulnerabilitySeverityData),
+                datasets: [{
+                    data: Object.values(vulnerabilitySeverityData),
+                    backgroundColor: [
+                        colors.critical,
+                        colors.high,
+                        colors.medium,
+                        colors.low
+                    ],
+                    borderWidth: 3,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            font: {
+                                size: 14,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.raw / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.raw} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Métricas de Seguridad (Bar)
+        const securityMetricsCtx = document.getElementById('securityMetricsChart').getContext('2d');
+        const securityMetricsChart = new Chart(securityMetricsCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(securityMetricsData),
+                datasets: [{
+                    label: 'Cantidad',
+                    data: Object.values(securityMetricsData),
+                    backgroundColor: [
+                        colors.critical,
+                        colors.warning,
+                        colors.high,
+                        colors.success
+                    ],
+                    borderColor: [
+                        colors.critical,
+                        colors.warning,
+                        colors.high,
+                        colors.success
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        borderColor: '#374151',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Evolución Temporal (Line)
+        const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+        const timelineChart = new Chart(timelineCtx, {
+            type: 'line',
+            data: {
+                labels: timelineData.labels,
+                datasets: [{
+                    label: 'Vulnerabilidades',
+                    data: timelineData.vulnerabilities,
+                    borderColor: colors.critical,
+                    backgroundColor: colors.critical + '20',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: colors.critical,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6
+                }, {
+                    label: 'Dispositivos',
+                    data: timelineData.devices,
+                    borderColor: colors.primary,
+                    backgroundColor: colors.primary + '20',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: colors.primary,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            font: {
+                                size: 14,
+                                weight: '600'
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Tipos de Dispositivos (Pie)
+        const deviceTypesCtx = document.getElementById('deviceTypesChart').getContext('2d');
+        const deviceTypesChart = new Chart(deviceTypesCtx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(deviceTypesData),
+                datasets: [{
+                    data: Object.values(deviceTypesData),
+                    backgroundColor: [
+                        colors.primary,
+                        colors.success,
+                        colors.warning,
+                        colors.info
+                    ],
+                    borderWidth: 3,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Funciones de utilidad
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('smartcam-theme', 
+                document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+
+        function refreshCharts() {
+            showNotification('🔄 Actualizando gráficos...', 'info');
+            // Simular actualización
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+
+        function exportChartsReport() {
+            showNotification('📥 Generando reporte visual...', 'info');
+            // Aquí se podría implementar exportación a PDF
+            setTimeout(() => {
+                showNotification('✅ Funcionalidad en desarrollo', 'warning');
+            }, 1500);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="
+                        background: none;
+                        border: none;
+                        color: inherit;
+                        font-size: 1.2rem;
+                        cursor: pointer;
+                        padding: 0;
+                        margin-left: auto;
+                        opacity: 0.7;
+                    ">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        // Cargar tema guardado
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('smartcam-theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+            console.log('📈 SmartCam Auditor Analytics cargado');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# Configuración para laboratorio de pruebas
+# Redes controladas para testing
+
+# Red local de laboratorio
+192.168.99.0/24
+
+# Redes de prueba virtuales
+10.99.99.0/24
+
+# Red específica para cámaras de prueba
+192.168.200.0/24

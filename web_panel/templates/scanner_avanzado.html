@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escáner de Red Avanzado - SmartCam Auditor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_new.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-title">
+                <i class="fas fa-shield-alt"></i>
+                SmartCam Auditor v2.0 Pro
+            </h1>
+            <div class="nav-links">
+                <a href="/dashboard" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="/charts" class="nav-link">
+                    <i class="fas fa-chart-bar"></i> Métricas
+                </a>
+                <a href="/probar_credenciales" class="nav-link">
+                    <i class="fas fa-key"></i> Credenciales
+                </a>
+                <a href="/scanner_avanzado" class="nav-link active">
+                    <i class="fas fa-radar"></i> Escáner Avanzado
+                </a>
+                <a href="/logout" class="nav-link logout">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1>
+                    <i class="fas fa-radar"></i>
+                    Escáner de Red Avanzado
+                </h1>
+                <p class="subtitle">Detección inteligente de dispositivos IoT y cámaras IP</p>
+            </div>
+
+            <!-- Panel de Control -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-sliders-h"></i> Control de Escaneo</h2>
+                </div>
+                <div class="panel-content">
+                    {% if scanner_available %}
+                        <div class="form-group">
+                            <label for="network-input">Red a escanear:</label>
+                            <div class="input-group">
+                                <input type="text" 
+                                       id="network-input" 
+                                       placeholder="192.168.1.0/24 (o 'auto' para detectar automáticamente)"
+                                       value="auto"
+                                       class="input-field">
+                                <button onclick="startAdvancedScan()" 
+                                        id="scan-btn" 
+                                        class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Iniciar Escaneo
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="scanner-status" id="scanner-status" style="display: none;">
+                            <div class="status-indicator">
+                                <div class="pulse-loader"></div>
+                                <span id="status-text">Iniciando escaneo...</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            El escáner avanzado no está disponible. Verifique la instalación de dependencias.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Resultados del Escaneo -->
+            <div id="scan-results" style="display: none;">
+                <!-- Resumen General -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-chart-pie"></i> Resumen del Escaneo</h2>
+                    </div>
+                    <div class="panel-content">
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon">
+                                    <i class="fas fa-network-wired"></i>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="metric-value" id="total-devices">0</span>
+                                    <span class="metric-label">Dispositivos Encontrados</span>
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon camera">
+                                    <i class="fas fa-video"></i>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="metric-value" id="cameras-found">0</span>
+                                    <span class="metric-label">Cámaras IP</span>
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon iot">
+                                    <i class="fas fa-microchip"></i>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="metric-value" id="iot-devices">0</span>
+                                    <span class="metric-label">Dispositivos IoT</span>
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon critical">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="metric-value" id="critical-devices">0</span>
+                                    <span class="metric-label">Críticos</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Distribución -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-chart-donut"></i> Distribución de Dispositivos</h2>
+                    </div>
+                    <div class="panel-content">
+                        <div class="chart-container">
+                            <canvas id="device-distribution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Dispositivos -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-list"></i> Dispositivos Detectados</h2>
+                        <div class="panel-actions">
+                            <button onclick="exportResults()" class="btn btn-secondary">
+                                <i class="fas fa-download"></i> Exportar
+                            </button>
+                            <button onclick="testCredentials()" class="btn btn-warning">
+                                <i class="fas fa-key"></i> Probar Credenciales
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <div class="table-container">
+                            <table id="devices-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>IP</th>
+                                        <th>Tipo de Dispositivo</th>
+                                        <th>Confianza</th>
+                                        <th>Puertos Abiertos</th>
+                                        <th>Servicios</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="devices-tbody">
+                                    <!-- Datos dinámicos aquí -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let scanResults = null;
+        let distributionChart = null;
+
+        function startAdvancedScan() {
+            const network = document.getElementById('network-input').value || 'auto';
+            const scanBtn = document.getElementById('scan-btn');
+            const status = document.getElementById('scanner-status');
+            const results = document.getElementById('scan-results');
+            
+            // Ocultar resultados anteriores
+            results.style.display = 'none';
+            
+            // Mostrar estado de escaneo
+            status.style.display = 'block';
+            scanBtn.disabled = true;
+            scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Escaneando...';
+            
+            // Simular progreso
+            simulateProgress();
+            
+            // Ejecutar escaneo
+            fetch('/ejecutar_scanner', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ network: network })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                scanResults = data;
+                displayResults(data);
+                
+                // Ocultar estado y mostrar resultados
+                status.style.display = 'none';
+                results.style.display = 'block';
+                
+                // Restaurar botón
+                scanBtn.disabled = false;
+                scanBtn.innerHTML = '<i class="fas fa-search"></i> Iniciar Escaneo';
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error durante el escaneo: ' + error.message);
+                
+                // Restaurar estado
+                status.style.display = 'none';
+                scanBtn.disabled = false;
+                scanBtn.innerHTML = '<i class="fas fa-search"></i> Iniciar Escaneo';
+            });
+        }
+
+        function simulateProgress() {
+            const progressFill = document.getElementById('progress-fill');
+            const statusText = document.getElementById('status-text');
+            
+            const phases = [
+                'Detectando red local...',
+                'Escaneando hosts activos...',
+                'Verificando puertos...',
+                'Identificando dispositivos...',
+                'Analizando servicios...',
+                'Finalizando escaneo...'
+            ];
+            
+            let currentPhase = 0;
+            let progress = 0;
+            
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15 + 5;
+                
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(progressInterval);
+                }
+                
+                progressFill.style.width = progress + '%';
+                
+                // Cambiar fase cada ~20% de progreso
+                const phaseIndex = Math.min(Math.floor(progress / 17), phases.length - 1);
+                if (phaseIndex !== currentPhase) {
+                    currentPhase = phaseIndex;
+                    statusText.textContent = phases[phaseIndex];
+                }
+            }, 300);
+        }
+
+        function displayResults(data) {
+            // Actualizar métricas
+            document.getElementById('total-devices').textContent = data.total_devices;
+            document.getElementById('cameras-found').textContent = data.summary.cameras;
+            document.getElementById('iot-devices').textContent = data.summary.iot_devices;
+            document.getElementById('critical-devices').textContent = data.summary.critical_ports;
+            
+            // Crear gráfico de distribución
+            createDistributionChart(data);
+            
+            // Llenar tabla de dispositivos
+            populateDevicesTable(data.devices);
+        }
+
+        function createDistributionChart(data) {
+            const ctx = document.getElementById('device-distribution-chart').getContext('2d');
+            
+            // Contar tipos de dispositivos
+            const types = {};
+            data.devices.forEach(device => {
+                const type = device.device_type || 'Unknown';
+                types[type] = (types[type] || 0) + 1;
+            });
+            
+            const labels = Object.keys(types);
+            const values = Object.values(types);
+            const colors = [
+                '#ff0080', '#00ff80', '#8000ff', '#ff8000', 
+                '#0080ff', '#ff0040', '#40ff00', '#8040ff'
+            ];
+            
+            if (distributionChart) {
+                distributionChart.destroy();
+            }
+            
+            distributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 2,
+                        borderColor: '#1a1a2e'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e94560'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function populateDevicesTable(devices) {
+            const tbody = document.getElementById('devices-tbody');
+            tbody.innerHTML = '';
+            
+            devices.forEach(device => {
+                const row = document.createElement('tr');
+                
+                // Determinar clase CSS basada en confianza
+                let confidenceClass = 'confidence-low';
+                if (device.confidence >= 75) confidenceClass = 'confidence-high';
+                else if (device.confidence >= 50) confidenceClass = 'confidence-medium';
+                
+                // Determinar icono del tipo de dispositivo
+                let typeIcon = 'fas fa-question';
+                if (device.device_type.includes('Camera')) typeIcon = 'fas fa-video';
+                else if (device.device_type.includes('IoT')) typeIcon = 'fas fa-microchip';
+                else if (device.device_type.includes('Web')) typeIcon = 'fas fa-globe';
+                
+                row.innerHTML = `
+                    <td class="ip-cell">${device.ip}</td>
+                    <td>
+                        <i class="${typeIcon}"></i>
+                        ${device.device_type}
+                    </td>
+                    <td>
+                        <span class="confidence-badge ${confidenceClass}">
+                            ${device.confidence}%
+                        </span>
+                    </td>
+                    <td class="ports-cell">
+                        ${device.open_ports.map(port => `<span class="port-badge">${port}</span>`).join('')}
+                    </td>
+                    <td class="services-cell">
+                        ${device.services.slice(0, 2).join(', ')}
+                        ${device.services.length > 2 ? '...' : ''}
+                    </td>
+                    <td class="actions-cell">
+                        <button onclick="inspectDevice('${device.ip}')" class="btn-icon" title="Inspeccionar">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <button onclick="testSingleDevice('${device.ip}')" class="btn-icon" title="Probar Credenciales">
+                            <i class="fas fa-key"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function inspectDevice(ip) {
+            alert(`Funcionalidad de inspección para ${ip} - En desarrollo`);
+        }
+
+        function testSingleDevice(ip) {
+            if (confirm(`¿Desea probar credenciales débiles en ${ip}?`)) {
+                window.location.href = `/probar_credenciales?ips=${ip}`;
+            }
+        }
+
+        function testCredentials() {
+            if (!scanResults || !scanResults.devices.length) {
+                alert('No hay dispositivos para probar');
+                return;
+            }
+            
+            const ips = scanResults.devices.map(d => d.ip).slice(0, 5).join(',');
+            window.location.href = `/probar_credenciales?ips=${ips}`;
+        }
+
+        function exportResults() {
+            if (!scanResults) {
+                alert('No hay resultados para exportar');
+                return;
+            }
+            
+            const data = {
+                timestamp: new Date().toISOString(),
+                network: scanResults.network,
+                summary: scanResults.summary,
+                devices: scanResults.devices
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `scanner_results_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

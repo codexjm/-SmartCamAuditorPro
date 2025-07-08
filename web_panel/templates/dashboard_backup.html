@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCam Auditor v2.0 Pro - Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_new.css') }}">
+</head>
+<body class="matrix-bg">
+    <div class="container">
+        <!-- Header con efectos neón -->
+        <header class="header fade-in">
+            <h1 class="neon-text">🔒 SmartCam Auditor v2.0 Pro</h1>
+            <p class="text-neon-blue">Dashboard de Seguridad - Usuario: {{ user }}</p>
+        </header>
+
+        <!-- Mensajes Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'error' }} slide-in">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+            background: rgba(30, 30, 30, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 255, 153, 0.2);
+            border: 1px solid rgba(0, 255, 153, 0.1);
+        }
+
+        .header h1 {
+            color: #00ff99;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 153, 0.5);
+        }
+
+        .header p {
+            color: #cccccc;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .version {
+            background: rgba(0, 255, 153, 0.1);
+            color: #00ff99;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            border: 1px solid rgba(0, 255, 153, 0.3);
+        }
+
+        .user-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .user-info {
+            background: rgba(0, 255, 153, 0.1);
+            color: #00ff99;
+            padding: 10px 15px;
+            border-radius: 25px;
+            border: 1px solid rgba(0, 255, 153, 0.3);
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 71, 87, 0.4);
+        }
+
+        .card {
+            background: rgba(30, 30, 30, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 255, 153, 0.1);
+            border: 1px solid rgba(0, 255, 153, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 255, 153, 0.2);
+        }
+
+        .card h2 {
+            color: #00ff99;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px rgba(0, 255, 153, 0.3);
+        }
+
+        .card h3 {
+            color: #cccccc;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00ff99 0%, #00cc77 100%);
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 15px 35px rgba(0, 255, 153, 0.4);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 15px 35px rgba(116, 185, 255, 0.4);
+        }
+
+        .logs-section {
+            background: rgba(40, 40, 40, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #555;
+        }
+
+        .logs-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .logs-list li {
+            background: rgba(50, 50, 50, 0.6);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #00ff99;
+            transition: all 0.3s ease;
+        }
+
+        .logs-list li:hover {
+            background: rgba(60, 60, 60, 0.8);
+            transform: translateX(10px);
+        }
+
+        .logs-list a {
+            color: #00ff99;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logs-list a:hover {
+            color: #00ff99;
+        }
+
+        .logs-list a::before {
+            content: "📄";
+            font-size: 1.2rem;
+        }
+
+        .empty-logs {
+            text-align: center;
+            color: #888;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        .empty-logs::before {
+            content: "📁";
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        .warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            text-align: center;
+        }
+
+        .warning strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .user-controls {
+                position: relative;
+                top: auto;
+                right: auto;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- User Controls -->
+    <div class="user-controls">
+        <span class="user-info">👤 {{ user }}</span>
+        <a href="{{ url_for('web_panel.logout') }}" class="logout-btn">🚪 Cerrar Sesión</a>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>� SmartCam Auditor</h1>
+            <p>Panel de Auditoría de Seguridad para Cámaras Inteligentes</p>
+            <span class="version">v2.0 Pro</span>
+        </div>
+
+        <!-- Warning Alert -->
+        <div class="warning">
+            <strong>⚠️ ADVERTENCIA LEGAL</strong>
+            Esta herramienta debe usarse únicamente en redes propias o con autorización explícita.
+        </div>
+
+        <!-- Control Panel -->
+        <div class="card">
+            <h2>🚀 Centro de Control</h2>
+            <div class="controls">
+                <form action="{{ url_for('web_panel.ejecutar_auditoria') }}" method="get" style="display: inline;">
+                    <button type="submit" class="btn btn-primary">🚀 Ejecutar Auditoría</button>
+                </form>
+                
+                <form action="{{ url_for('web_panel.ejecutar_auditoria_rapida') }}" method="get" style="display: inline;">
+                    <button type="submit" class="btn btn-secondary">⚡ Auditoría Rápida</button>
+                </form>
+                
+                <a href="{{ url_for('web_panel.graficos') }}" class="btn btn-secondary">📊 Ver Gráficos</a>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        <div class="card">
+            <h3>� Logs Disponibles</h3>
+            <div class="logs-section">
+                {% if log_files %}
+                    <ul class="logs-list">
+                        {% for file in log_files %}
+                            <li>
+                                <a href="{{ url_for('web_panel.view_log', filename=file) }}">{{ file }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-logs">
+                        No hay archivos de logs disponibles<br>
+                        <small>Los logs aparecerán aquí después de ejecutar auditorías</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>SmartCam Auditor v2.0 Pro</strong></p>
+            <p>© 2025 Security Solutions Corp. | Para uso en redes autorizadas únicamente</p>
+            <p>🛡️ Herramienta de Auditoría de Seguridad Profesional</p>
+        </div>
+    </div>
+</body>
+</html>
+                <button id="startBtn" class="btn btn-primary" onclick="startAudit()">
+                    🎯 Iniciar Auditoría
+                </button>
+                <button id="stopBtn" class="btn btn-danger" onclick="stopAudit()" disabled>
+                    🛑 Detener Auditoría
+                </button>
+                <button id="clearBtn" class="btn btn-secondary" onclick="clearResults()">
+                    🧹 Limpiar Resultados
+                </button>
+                <button id="exportBtn" class="btn btn-secondary" onclick="exportReport()">
+                    📥 Exportar Reporte
+                </button>
+                
+                <a href="/graficos" class="btn btn-info">
+                    📈 Ver Gráficos
+                </a>
+                
+                <!-- Formulario para ejecución directa -->
+                <form action="{{ url_for('web_panel.ejecutar_auditoria') }}" method="get" style="display: inline;">
+                    <button type="submit" class="btn btn-success">🚀 Ejecutar Auditoría</button>
+                </form>
+                
+                <a href="/ejecutar_rapido" class="btn btn-warning">
+                    ⚡ Auditoría Rápida
+                </a>
+                <button class="btn btn-info" onclick="executeCustomAudit()">
+                    🎯 Auditoría Personalizada
+                </button>
+            </div>
+
+            <!-- Panel de Estado -->
+            <div class="status-panel">
+                <div id="statusText" class="status-text">🟢 Sistema listo para auditoría</div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <div id="progressText" class="progress-text">0%</div>
+                </div>
+                
+                <!-- Indicador de Carga -->
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <div>🔍 Ejecutando auditoría de seguridad...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas de Seguridad -->
+        <div class="card">
+            <h2>📊 Panel de Estadísticas</h2>
+            <div class="stats">
+                <div class="stat-card devices">
+                    <div id="devicesCount" class="stat-number">0</div>
+                    <div class="stat-label">Dispositivos Analizados</div>
+                </div>
+                <div class="stat-card vulnerabilities">
+                    <div id="vulnerabilitiesCount" class="stat-number">0</div>
+                    <div class="stat-label">Vulnerabilidades Totales</div>
+                </div>
+                <div class="stat-card critical">
+                    <div id="criticalCount" class="stat-number">0</div>
+                    <div class="stat-label">Vulnerabilidades Críticas</div>
+                </div>
+                <div class="stat-card credentials">
+                    <div id="credentialsCount" class="stat-number">0</div>
+                    <div class="stat-label">Credenciales Comprometidas</div>
+                </div>
+            </div>
+            
+            <div id="lastAuditInfo" style="text-align: center; margin-top: 1rem; color: var(--text-secondary); font-size: 0.875rem;">
+                No se han ejecutado auditorías aún
+            </div>
+        </div>
+
+        <!-- Sección de Ejecución de Auditorías -->
+        <div class="card">
+            <h2>🔧 Métodos de Ejecución</h2>
+            
+            <div class="execution-methods">
+                <div class="method-card">
+                    <h3>🚀 Ejecución Directa</h3>
+                    <p>Ejecuta la auditoría usando subprocess en background</p>
+                    <form action="{{ url_for('web_panel.ejecutar_auditoria') }}" method="get">
+                        <button type="submit" class="btn btn-success">🚀 Ejecutar Auditoría</button>
+                    </form>
+                </div>
+                
+                <div class="method-card">
+                    <h3>⚡ Auditoría Rápida</h3>
+                    <p>Escaneo rápido de la red 192.168.1.0/24</p>
+                    <form action="{{ url_for('web_panel.ejecutar_auditoria_rapida') }}" method="get">
+                        <button type="submit" class="btn btn-warning">⚡ Ejecutar Rápido</button>
+                    </form>
+                </div>
+                
+                <div class="method-card">
+                    <h3>🎯 Auditoría Personalizada</h3>
+                    <p>Especifica la red objetivo manualmente</p>
+                    <button onclick="executeCustomAudit()" class="btn btn-info">
+                        🎯 Ejecutar Personalizada
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultados de Auditoría -->
+        <div class="card">
+            <h2>📋 Resultados de Auditoría</h2>
+            <div id="resultsContainer" class="results-container">
+                <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+                    <h3>No hay resultados disponibles</h3>
+                    <p>Ejecuta una auditoría para ver los dispositivos encontrados y sus vulnerabilidades</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Archivos de Logs -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>📁 Archivos de Logs y Reportes</h2>
+                <div>
+                    <button class="btn btn-secondary" onclick="refreshLogs()">
+                        🔄 Actualizar
+                    </button>
+                    <button class="btn btn-secondary" onclick="showSystemInfo()">
+                        ℹ️ Info Sistema
+                    </button>
+                </div>
+            </div>
+            
+            <div id="logsContainer">
+                {% if log_files %}
+                    <div class="logs-container">
+                        <div class="logs-grid">
+                            {% for log_file in log_files %}
+                            <div class="log-item">
+                                <div class="log-icon">📄</div>
+                                <div class="log-info">
+                                    <h4>{{ log_file }}</h4>
+                                    <p class="log-size">
+                                        {% set file_path = 'logs/' + log_file %}
+                                        Archivo de auditoría
+                                    </p>
+                                </div>
+                                <div class="log-actions">
+                                    <a href="/logs/{{ log_file }}" class="btn-log-action view" target="_blank">
+                                        👁️ Ver
+                                    </a>
+                                    <a href="/download/{{ log_file }}" class="btn-log-action download">
+                                        📥 Descargar
+                                    </a>
+                                    <button class="btn-log-action delete" onclick="deleteLog('{{ log_file }}')">
+                                        🗑️ Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📁</div>
+                        <h3>No hay archivos de logs disponibles</h3>
+                        <p>Los archivos de logs aparecerán aquí después de ejecutar auditorías</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Modal para información del sistema -->
+        <div id="systemInfoModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>ℹ️ Información del Sistema</h3>
+                    <button class="modal-close" onclick="closeSystemInfo()">&times;</button>
+                </div>
+                <div class="modal-body" id="systemInfoContent">
+                    <!-- Se carga dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>SmartCam Auditor v2.0 Pro</strong> - Panel Web Enterprise</p>
+            <p>© 2025 Security Solutions Corp. | Para uso empresarial y educativo</p>
+            <p>🛡️ Desarrollado para profesionales en ciberseguridad</p>
+        </div>
+        
+        <!-- Indicador de Estado de Conexión -->
+        <div id="connectionStatus" class="connection-status connected">
+            🟢 Conectado al servidor
+        </div>
+    </div>
+
+    <script>
+        let updateInterval;
+        let isAuditRunning = false;
+
+        // Configuración de la aplicación
+        const config = {
+            updateInterval: 1000,
+            apiTimeout: 10000
+        };
+
+        // Inicialización al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfiguration();
+            checkInitialStatus();
+            loadThemePreference();
+            
+            // Verificar conexión periódicamente
+            setInterval(() => {
+                if (!isAuditRunning) {
+                    fetch('/api/status')
+                        .then(response => response.ok ? updateConnectionStatus(true) : updateConnectionStatus(false))
+                        .catch(() => updateConnectionStatus(false));
+                }
+            }, 10000); // Cada 10 segundos
+            
+            console.log('🚀 SmartCam Auditor Dashboard v2.0 Pro inicializado');
+        });
+
+        // Función para manejar teclas de acceso rápido
+        document.addEventListener('keydown', function(e) {
+            // Ctrl + Enter para ejecutar auditoría rápida
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                if (!isAuditRunning) {
+                    window.location.href = '/ejecutar_rapido';
+                }
+            }
+            
+            // Escape para cerrar modales
+            if (e.key === 'Escape') {
+                const modal = document.querySelector('div[style*="backdrop-filter: blur(5px)"]');
+                if (modal && window.closeCustomModal) {
+                    window.closeCustomModal();
+                }
+            }
+        });
+
+        function loadThemePreference() {
+            const savedTheme = localStorage.getItem('smartcam-theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                updateThemeToggleText();
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const isDark = body.classList.contains('dark-theme');
+            
+            if (isDark) {
+                body.classList.remove('dark-theme');
+                localStorage.setItem('smartcam-theme', 'light');
+            } else {
+                body.classList.add('dark-theme');
+                localStorage.setItem('smartcam-theme', 'dark');
+            }
+            
+            updateThemeToggleText();
+            showNotification(
+                isDark ? '☀️ Tema claro activado' : '🌙 Tema oscuro activado', 
+                'info'
+            );
+        }
+
+        function updateThemeToggleText() {
+            const toggleBtn = document.querySelector('.theme-toggle');
+            const isDark = document.body.classList.contains('dark-theme');
+            toggleBtn.textContent = isDark ? '☀️ Tema Claro' : '🌙 Tema Oscuro';
+        }
+
+        function handleCustomForm(event) {
+            const network = event.target.network.value;
+            
+            // Validar formato de red
+            const networkPattern = /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/;
+            if (!networkPattern.test(network)) {
+                event.preventDefault();
+                showNotification('⚠️ Formato de red inválido. Ejemplo: 192.168.1.0/24', 'warning');
+                return false;
+            }
+            
+            showNotification(`🎯 Iniciando auditoría personalizada en ${network}`, 'info');
+            return true;
+        }
+
+        async function loadConfiguration() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    document.getElementById('networksInput').value = data.networks.join('\n');
+                    console.log('✅ Configuración cargada correctamente');
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                console.error('❌ Error cargando configuración:', error);
+                showNotification('Error cargando configuración: ' + error.message, 'error');
+            }
+        }
+
+        async function checkInitialStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const status = data.data;
+                    if (status.running) {
+                        startStatusUpdates();
+                        updateUIForRunningAudit();
+                    }
+                    // Cargar resultados si existen
+                    if (status.results && status.results.length > 0) {
+                        loadResults();
+                    }
+                }
+            } catch (error) {
+                console.error('Error verificando estado inicial:', error);
+            }
+        }
+
+        async function startAudit() {
+            const networks = document.getElementById('networksInput').value
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line && !line.startsWith('#'));
+            
+            if (networks.length === 0) {
+                showNotification('⚠️ Por favor, ingresa al menos una red para auditar', 'warning');
+                return;
+            }
+
+            // Validar formato de redes
+            const networkPattern = /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/;
+            const invalidNetworks = networks.filter(net => !networkPattern.test(net));
+            
+            if (invalidNetworks.length > 0) {
+                showNotification(`⚠️ Formato de red inválido: ${invalidNetworks.join(', ')}`, 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/start_audit', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({networks})
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    updateUIForRunningAudit();
+                    startStatusUpdates();
+                    showNotification(`🚀 Auditoría iniciada para ${networks.length} redes`, 'success');
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                showNotification('❌ Error iniciando auditoría: ' + error.message, 'error');
+            }
+        }
+
+        async function stopAudit() {
+            try {
+                const response = await fetch('/api/stop_audit', {method: 'POST'});
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    stopStatusUpdates();
+                    updateUIForStoppedAudit();
+                    showNotification('🛑 Auditoría detenida exitosamente', 'info');
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                showNotification('❌ Error deteniendo auditoría: ' + error.message, 'error');
+            }
+        }
+
+        async function clearResults() {
+            if (!confirm('¿Estás seguro de que quieres limpiar todos los resultados?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/clear_results', {method: 'POST'});
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    // Limpiar UI
+                    document.getElementById('devicesCount').textContent = '0';
+                    document.getElementById('vulnerabilitiesCount').textContent = '0';
+                    document.getElementById('criticalCount').textContent = '0';
+                    document.getElementById('credentialsCount').textContent = '0';
+                    document.getElementById('lastAuditInfo').textContent = 'No se han ejecutado auditorías aún';
+                    
+                    // Limpiar tabla de resultados
+                    document.getElementById('resultsContainer').innerHTML = `
+                        <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+                            <h3>No hay resultados disponibles</h3>
+                            <p>Ejecuta una auditoría para ver los dispositivos encontrados y sus vulnerabilidades</p>
+                        </div>
+                    `;
+                    
+                    showNotification('🧹 Resultados limpiados exitosamente', 'success');
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                showNotification('❌ Error limpiando resultados: ' + error.message, 'error');
+            }
+        }
+
+        function updateUIForRunningAudit() {
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('loadingIndicator').style.display = 'block';
+            isAuditRunning = true;
+        }
+
+        function updateUIForStoppedAudit() {
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('loadingIndicator').style.display = 'none';
+            isAuditRunning = false;
+        }
+
+        function startStatusUpdates() {
+            updateInterval = setInterval(updateStatus, config.updateInterval);
+        }
+
+        function stopStatusUpdates() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+        }
+
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const status = data.data;
+
+                    // Actualizar texto de estado
+                    document.getElementById('statusText').textContent = status.current_task;
+                    
+                    // Actualizar barra de progreso
+                    document.getElementById('progressFill').style.width = status.progress + '%';
+                    document.getElementById('progressText').textContent = status.progress + '%';
+
+                    // Si la auditoría terminó
+                    if (!status.running && status.progress === 100) {
+                        stopStatusUpdates();
+                        updateUIForStoppedAudit();
+                        loadResults();
+                        showNotification('✅ Auditoría completada exitosamente', 'success');
+                    }
+                    
+                    // Si la auditoría fue detenida
+                    if (!status.running && isAuditRunning) {
+                        stopStatusUpdates();
+                        updateUIForStoppedAudit();
+                        loadResults();
+                    }
+                    
+                    // Actualizar estado de conexión
+                    updateConnectionStatus(true);
+                } else {
+                    throw new Error(data.message || 'Error en la respuesta del servidor');
+                }
+            } catch (error) {
+                console.error('Error actualizando estado:', error);
+                updateConnectionStatus(false);
+                
+                // Si hay muchos errores consecutivos, detener actualizaciones
+                if (!window.consecutiveErrors) window.consecutiveErrors = 0;
+                window.consecutiveErrors++;
+                
+                if (window.consecutiveErrors >= 3) {
+                    stopStatusUpdates();
+                    updateUIForStoppedAudit();
+                    showNotification('⚠️ Conexión perdida con el servidor', 'warning');
+                }
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connectionStatus');
+            if (connected) {
+                statusElement.className = 'connection-status connected';
+                statusElement.innerHTML = '🟢 Conectado al servidor';
+                window.consecutiveErrors = 0;
+            } else {
+                statusElement.className = 'connection-status disconnected';
+                statusElement.innerHTML = '🔴 Sin conexión al servidor';
+            }
+        }
+
+        async function loadResults() {
+            try {
+                const response = await fetch('/api/results');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const summary = data.data.summary;
+                    const results = data.data.results;
+
+                    // Actualizar estadísticas
+                    document.getElementById('devicesCount').textContent = summary.total_devices;
+                    document.getElementById('vulnerabilitiesCount').textContent = summary.total_vulnerabilities;
+                    document.getElementById('criticalCount').textContent = summary.critical_vulnerabilities;
+                    document.getElementById('credentialsCount').textContent = summary.credentials_found;
+
+                    // Actualizar información de última auditoría
+                    if (summary.last_audit) {
+                        document.getElementById('lastAuditInfo').textContent = 
+                            `Última auditoría: ${summary.last_audit}`;
+                    }
+
+                    // Mostrar resultados
+                    displayResults(results);
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                console.error('Error cargando resultados:', error);
+                showNotification('❌ Error cargando resultados: ' + error.message, 'error');
+            }
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('resultsContainer');
+            
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+                        <h3>No se encontraron dispositivos</h3>
+                        <p>Las redes especificadas no contienen dispositivos detectables o accesibles</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>🎯 Dispositivo</th>
+                            <th>🌐 Red</th>
+                            <th>🔌 Puertos</th>
+                            <th>🔑 Credenciales</th>
+                            <th>⚠️ Vulnerabilidades</th>
+                            <th>⏰ Detectado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            results.forEach(result => {
+                html += '<tr>';
+                html += `<td><strong>${result.ip}</strong></td>`;
+                html += `<td><code>${result.network}</code></td>`;
+                html += `<td>${result.ports.length} abiertos</td>`;
+                
+                // Credenciales
+                if (result.credentials.length > 0) {
+                    html += `<td><span class="badge badge-warning">⚠️ ${result.credentials.length} comprometidas</span></td>`;
+                } else {
+                    html += `<td><span class="badge badge-success">✅ Seguras</span></td>`;
+                }
+                
+                // Vulnerabilidades
+                let vulnHtml = '';
+                const vulnCounts = {critical: 0, high: 0, medium: 0, low: 0};
+                
+                result.vulnerabilities.forEach(vuln => {
+                    const severity = vuln.severity.toLowerCase();
+                    vulnCounts[severity] = (vulnCounts[severity] || 0) + 1;
+                });
+                
+                if (vulnCounts.critical > 0) vulnHtml += `<span class="badge badge-critical">CRÍTICA ${vulnCounts.critical}</span>`;
+                if (vulnCounts.high > 0) vulnHtml += `<span class="badge badge-high">ALTA ${vulnCounts.high}</span>`;
+                if (vulnCounts.medium > 0) vulnHtml += `<span class="badge badge-medium">MEDIA ${vulnCounts.medium}</span>`;
+                if (vulnCounts.low > 0) vulnHtml += `<span class="badge badge-low">BAJA ${vulnCounts.low}</span>`;
+                
+                if (!vulnHtml) vulnHtml = '<span class="badge badge-success">✅ Sin vulnerabilidades críticas</span>';
+                
+                html += `<td>${vulnHtml}</td>`;
+                html += `<td><small>${result.timestamp}</small></td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        async function exportReport() {
+            try {
+                showNotification('📥 Generando reporte...', 'info');
+                
+                const response = await fetch('/api/export_report');
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `smartcam_audit_report_${new Date().toISOString().slice(0,19).replace(/:/g,'')}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showNotification('✅ Reporte exportado exitosamente', 'success');
+                } else {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+            } catch (error) {
+                showNotification('❌ Error exportando reporte: ' + error.message, 'error');
+            }
+        }
+
+        async function executeCustomAudit() {
+            // Crear modal personalizado para entrada de red
+            const networkModal = document.createElement('div');
+            networkModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1001;
+                backdrop-filter: blur(5px);
+                animation: fadeIn 0.3s ease;
+            `;
+            
+            networkModal.innerHTML = `
+                <div style="
+                    background: var(--card-bg);
+                    padding: 2rem;
+                    border-radius: 16px;
+                    box-shadow: var(--shadow-lg);
+                    max-width: 500px;
+                    width: 90%;
+                    text-align: center;
+                    animation: slideUp 0.3s ease;
+                ">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">🎯 Auditoría Personalizada</h3>
+                    <p style="margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.5;">
+                        Ingresa la red que deseas auditar en formato CIDR.<br>
+                        <small>Ejemplo: 192.168.1.0/24, 10.0.0.0/8, 172.16.0.0/16</small>
+                    </p>
+                    <input 
+                        type="text" 
+                        id="customNetworkInput" 
+                        placeholder="192.168.1.0/24" 
+                        style="
+                            width: 100%;
+                            padding: 1rem;
+                            border: 2px solid var(--border-color);
+                            border-radius: 8px;
+                            font-size: 1rem;
+                            margin-bottom: 1.5rem;
+                            text-align: center;
+                            background: white;
+                            transition: border-color 0.3s;
+                        "
+                    >
+                    <div style="display: flex; gap: 1rem; justify-content: center;">
+                        <button onclick="executeCustomNetworkAudit()" style="
+                            background: linear-gradient(135deg, var(--info-color), #0891b2);
+                            color: white;
+                            border: none;
+                            padding: 0.75rem 1.5rem;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">🚀 Ejecutar</button>
+                        <button onclick="closeCustomModal()" style="
+                            background: linear-gradient(135deg, var(--secondary-color), #475569);
+                            color: white;
+                            border: none;
+                            padding: 0.75rem 1.5rem;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">❌ Cancelar</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(networkModal);
+            
+            // Enfocar el input
+            setTimeout(() => {
+                const input = document.getElementById('customNetworkInput');
+                input.focus();
+                input.select();
+            }, 100);
+            
+            // Función global para ejecutar auditoría personalizada
+            window.executeCustomNetworkAudit = async function() {
+                const network = document.getElementById('customNetworkInput').value.trim();
+                
+                if (!network) {
+                    showNotification('⚠️ Por favor, ingresa una red válida', 'warning');
+                    return;
+                }
+                
+                // Validar formato
+                const networkPattern = /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/;
+                if (!networkPattern.test(network)) {
+                    showNotification('⚠️ Formato de red inválido. Usa formato CIDR (ej: 192.168.1.0/24)', 'warning');
+                    return;
+                }
+                
+                // Validar rangos de IP
+                const ip = network.split('/')[0];
+                const parts = ip.split('.');
+                for (const part of parts) {
+                    if (parseInt(part) > 255 || parseInt(part) < 0) {
+                        showNotification('⚠️ Dirección IP inválida', 'warning');
+                        return;
+                    }
+                }
+                
+                // Validar máscara de red
+                const mask = parseInt(network.split('/')[1]);
+                if (mask < 8 || mask > 32) {
+                    showNotification('⚠️ Máscara de red inválida (debe estar entre /8 y /32)', 'warning');
+                    return;
+                }
+                
+                closeCustomModal();
+                
+                try {
+                    showNotification('🎯 Iniciando auditoría personalizada...', 'info');
+                    
+                    const response = await fetch('/ejecutar_personalizada', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({network})
+                    });
+
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        showNotification(`🚀 ${data.message}`, 'success');
+                        updateUIForRunningAudit();
+                        startStatusUpdates();
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    showNotification('❌ Error: ' + error.message, 'error');
+                }
+            };
+            
+            // Función global para cerrar modal
+            window.closeCustomModal = function() {
+                const modal = document.querySelector('div[style*="backdrop-filter: blur(5px)"]');
+                if (modal) {
+                    modal.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(() => modal.remove(), 300);
+                }
+            };
+            
+            // Permitir ejecutar con Enter
+            document.getElementById('customNetworkInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    executeCustomNetworkAudit();
+                }
+            });
+            
+            // Cerrar modal al hacer clic fuera
+            networkModal.addEventListener('click', function(e) {
+                if (e.target === networkModal) {
+                    closeCustomModal();
+                }
+            });
+        }
+
+        function showNotification(message, type = 'info') {
+            // Eliminar notificaciones existentes
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(n => n.remove());
+            
+            // Crear nueva notificación
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="
+                        background: none;
+                        border: none;
+                        color: inherit;
+                        font-size: 1.2rem;
+                        cursor: pointer;
+                        padding: 0;
+                        margin-left: auto;
+                        opacity: 0.7;
+                        transition: opacity 0.2s;
+                    " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Mostrar notificación con animación
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Auto-eliminar después de 6 segundos
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 6000);
+        }
+
+        async function refreshLogs() {
+            try {
+                showNotification('🔄 Actualizando lista de logs...', 'info');
+                
+                const response = await fetch('/api/logs');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    updateLogsDisplay(data.logs);
+                    showNotification('✅ Lista de logs actualizada', 'success');
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                showNotification('❌ Error actualizando logs: ' + error.message, 'error');
+            }
+        }
+
+        function updateLogsDisplay(logs) {
+            const container = document.getElementById('logsContainer');
+            
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📁</div>
+                        <h3>No hay archivos de logs disponibles</h3>
+                        <p>Los archivos de logs aparecerán aquí después de ejecutar auditorías</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="logs-container"><div class="logs-grid">';
+            
+            logs.forEach(log => {
+                html += `
+                    <div class="log-item">
+                        <div class="log-icon">📄</div>
+                        <div class="log-info">
+                            <h4>${log.filename}</h4>
+                            <p class="log-size">
+                                ${formatFileSize(log.size)} | ${log.modified}
+                            </p>
+                        </div>
+                        <div class="log-actions">
+                            <a href="/logs/${log.filename}" class="btn-log-action view" target="_blank">
+                                👁️ Ver
+                            </a>
+                            <a href="/download/${log.filename}" class="btn-log-action download">
+                                📥 Descargar
+                            </a>
+                            <button class="btn-log-action delete" onclick="deleteLog('${log.filename}')">
+                                🗑️ Eliminar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+            container.innerHTML = html;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function deleteLog(filename) {
+            if (!confirm(`¿Estás seguro de que quieres eliminar el archivo "${filename}"?\n\nEsta acción no se puede deshacer.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/delete_log/${filename}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showNotification(`🗑️ Archivo "${filename}" eliminado exitosamente`, 'success');
+                    refreshLogs(); // Actualizar la lista
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                showNotification('❌ Error eliminando archivo: ' + error.message, 'error');
+            }
+        }
+
+        async function showSystemInfo() {
+            try {
+                showNotification('ℹ️ Cargando información del sistema...', 'info');
+                
+                const response = await fetch('/api/system_info');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displaySystemInfo(data);
+                    document.getElementById('systemInfoModal').style.display = 'flex';
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                showNotification('❌ Error cargando información: ' + error.message, 'error');
+            }
+        }
+
+        function displaySystemInfo(data) {
+            const content = document.getElementById('systemInfoContent');
+            const sys = data.system_info;
+            const app = data.app_info;
+            
+            content.innerHTML = `
+                <div class="system-info">
+                    <div class="info-section">
+                        <h4>🖥️ Sistema Operativo</h4>
+                        <ul>
+                            <li><strong>Plataforma:</strong> ${sys.platform}</li>
+                            <li><strong>Versión:</strong> ${sys.platform_version}</li>
+                            <li><strong>Python:</strong> ${sys.python_version}</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h4>⚡ Recursos</h4>
+                        <ul>
+                            <li><strong>CPU Cores:</strong> ${sys.cpu_count}</li>
+                            <li><strong>RAM Total:</strong> ${formatFileSize(sys.memory_total)}</li>
+                            <li><strong>RAM Disponible:</strong> ${formatFileSize(sys.memory_available)}</li>
+                            <li><strong>Uso de Disco:</strong> ${sys.disk_usage.toFixed(1)}%</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h4>🔒 Aplicación</h4>
+                        <ul>
+                            <li><strong>Versión:</strong> ${app.version}</li>
+                            <li><strong>Directorio Logs:</strong> ${app.log_directory}</li>
+                            <li><strong>Archivos de Log:</strong> ${app.total_log_files}</li>
+                            <li><strong>Config Cargada:</strong> ${app.config_loaded ? '✅ Sí' : '❌ No'}</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeSystemInfo() {
+            document.getElementById('systemInfoModal').style.display = 'none';
+        }
+
+        // Cerrar modal al hacer clic fuera de él
+        window.onclick = function(event) {
+            const modal = document.getElementById('systemInfoModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

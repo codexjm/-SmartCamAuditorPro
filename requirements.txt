@@ -1,0 +1,34 @@
+# SmartCam Auditor v2.0 Pro - Dependencias de Python
+
+# Framework web para panel de control
+flask>=2.3.0
+
+# Biblioteca para información del sistema
+psutil>=5.9.0
+
+# Biblioteca para análisis de red
+python-nmap>=0.7.1
+
+# Biblioteca para requests HTTP
+requests>=2.31.0
+
+# Biblioteca para parsing JSON avanzado
+jsonschema>=4.17.0
+
+# Biblioteca para threading avanzado
+concurrent-futures>=3.1.1
+
+# Biblioteca para validación de IPs
+ipaddress>=1.0.23
+
+# Biblioteca para formateo de fechas
+python-dateutil>=2.8.2
+
+# Biblioteca para manejo de argumentos CLI
+argparse>=1.4.0
+
+# Biblioteca para testing (desarrollo)
+pytest>=7.4.0
+
+# Biblioteca para coverage (desarrollo)
+pytest-cov>=4.1.0
